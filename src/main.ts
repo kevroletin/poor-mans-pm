@@ -22,9 +22,6 @@ export default class MyPlugin extends Plugin {
           return;
         }
 
-        // Read current file content and get fronetMatter AI!
-        getFrontMatterInfo
-
         const dir = view.file?.parent?.path ?? "/";
         const new_file = (dir == "/" ? `todo> ${sel}.md` : `${dir}/todo> ${sel}.md`);
 
