@@ -1,7 +1,5 @@
-import { getFrontMatterInfo, App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
-import { DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab } from "./settings";
-
-// Remember to rename these classes and interfaces!
+import { getFrontMatterInfo, Editor, MarkdownView, Notice, Plugin } from 'obsidian';
+import { DEFAULT_SETTINGS, MyPluginSettings } from "./settings";
 
 export default class MyPlugin extends Plugin {
   settings: MyPluginSettings;
@@ -9,48 +7,48 @@ export default class MyPlugin extends Plugin {
   async onload() {
     console.log("*** ONLOAD ***");
 
-    await this.loadSettings();
+    // await this.loadSettings();
 
-    // This adds an editor command that can perform some operation on the current editor instance
     this.addCommand({
-      id: 'replace-selected',
-      name: 'Replace selected content',
+      id: 'todo-from-selection',
+      name: 'Create TODO from selection',
       editorCallback: (editor: Editor, view: MarkdownView) => {
-        const sel = editor.getSelection().trim();
-        if (sel === "" || sel.contains("\n")) {
-          console.log("Bad file name");
+        const selection = editor.getSelection().trim();
+        const lines = selection.split("\n");
+        if (lines.length < 1) {
+          console.log("Empty selection");
           return;
         }
 
-        // Get front matter from current file
-        const currentFileContent = view.file ? await this.app.vault.read(view.file) : "";
-        const frontMatterInfo = getFrontMatterInfo(currentFileContent);
-        
-        const dir = view.file?.parent?.path ?? "/";
-        const new_file = (dir == "/" ? `todo> ${sel}.md` : `${dir}/todo> ${sel}.md`);
-        
-        // Create content with front matter if it exists
-        let newFileContent = "";
-        if (frontMatterInfo && Object.keys(frontMatterInfo).length > 0) {
-          newFileContent = "---\n";
-          for (const [key, value] of Object.entries(frontMatterInfo)) {
-            newFileContent += `${key}: ${value}\n`;
-          }
-          newFileContent += "---\n\n";
+        if (view.file === null) {
+          return;
         }
 
-        this.app.vault.create(new_file, newFileContent).then((file) => {
-          // Replace the selection in the original file with a link to the new file
-          const link = this.app.fileManager.generateMarkdownLink(file, view.file?.path ?? "");
-          editor.replaceSelection(link);
+        const head = lines[0];
+        const body = lines.slice(1).join("\n");
 
-          console.log(`Created new file: ${new_file}`);
-        }).catch((error) => {
-          console.error("Error creating file:", error);
-          new Notice(`Failed to create file: ${error.message}`);
+        const dir = view.file.parent?.path ?? "/";
+        const new_file = (dir == "/" ? `${head}.md` : `${dir}/${head}.md`);
+
+        this.app.vault.read(view.file).then((content) => {
+          // copy "project" property
+          const xs = getFrontMatterInfo(content).frontmatter;
+          const ys = xs.split("\n").filter((x) => x.startsWith("project:")).join("\n");
+          const new_file_content = `---
+${ys}
+---
+#todo
+${body}
+`;
+
+          this.app.vault.create(new_file, new_file_content).then((file) => {
+            const link = this.app.fileManager.generateMarkdownLink(file, view.file?.path ?? "");
+            editor.replaceSelection(link);
+          }).catch((error) => {
+            console.error("Error creating file:", error);
+            new Notice(`Failed to create file: ${error.message}`);
+          });
         });
-
-        console.log(`*** ${new_file} ***`)
       }
     });
   }
