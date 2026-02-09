@@ -22,13 +22,24 @@ export default class MyPlugin extends Plugin {
           return;
         }
 
+        // Get front matter from current file
+        const currentFileContent = view.file ? await this.app.vault.read(view.file) : "";
+        const frontMatterInfo = getFrontMatterInfo(currentFileContent);
+        
         const dir = view.file?.parent?.path ?? "/";
         const new_file = (dir == "/" ? `todo> ${sel}.md` : `${dir}/todo> ${sel}.md`);
+        
+        // Create content with front matter if it exists
+        let newFileContent = "";
+        if (frontMatterInfo && Object.keys(frontMatterInfo).length > 0) {
+          newFileContent = "---\n";
+          for (const [key, value] of Object.entries(frontMatterInfo)) {
+            newFileContent += `${key}: ${value}\n`;
+          }
+          newFileContent += "---\n\n";
+        }
 
-
-
-
-        this.app.vault.create(new_file, "").then((file) => {
+        this.app.vault.create(new_file, newFileContent).then((file) => {
           // Replace the selection in the original file with a link to the new file
           const link = this.app.fileManager.generateMarkdownLink(file, view.file?.path ?? "");
           editor.replaceSelection(link);
