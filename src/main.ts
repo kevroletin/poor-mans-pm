@@ -23,10 +23,17 @@ export default class MyPlugin extends Plugin {
         }
 
         const dir = view.file?.parent?.path ?? "/";
-        const new_file = (dir == "/" ? `${sel}.md` : `${dir}/${sel}.md`);
+        const new_file = (dir == "/" ? `${sel}.md` : `${dir}/${sel}.md}`);
 
-        // create a new file using new_file path AI!
-
+        // Create a new file using the new_file path
+        this.app.vault.create(new_file, "").then((file) => {
+          // Optionally, you could open the newly created file
+          this.app.workspace.getLeaf(true).openFile(file);
+          console.log(`Created new file: ${new_file}`);
+        }).catch((error) => {
+          console.error("Error creating file:", error);
+          new Notice(`Failed to create file: ${error.message}`);
+        });
 
         console.log(`*** ${new_file} ***`)
       }
