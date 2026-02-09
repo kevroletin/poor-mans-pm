@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
+import { getFrontMatterInfo, App, Editor, MarkdownView, Modal, Notice, Plugin } from 'obsidian';
 import { DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab } from "./settings";
 
 // Remember to rename these classes and interfaces!
@@ -22,13 +22,19 @@ export default class MyPlugin extends Plugin {
           return;
         }
 
+        // Read current file content and get fronetMatter AI!
+        getFrontMatterInfo
+
         const dir = view.file?.parent?.path ?? "/";
-        const new_file = (dir == "/" ? `${sel}.md` : `${dir}/${sel}.md`);
+        const new_file = (dir == "/" ? `todo> ${sel}.md` : `${dir}/todo> ${sel}.md`);
+
+
+
 
         this.app.vault.create(new_file, "").then((file) => {
           // Replace the selection in the original file with a link to the new file
-          const linkText = `[${sel}](${file.basename})`;
-          editor.replaceSelection(linkText);
+          const link = this.app.fileManager.generateMarkdownLink(file, view.file?.path ?? "");
+          editor.replaceSelection(link);
 
           console.log(`Created new file: ${new_file}`);
         }).catch((error) => {
