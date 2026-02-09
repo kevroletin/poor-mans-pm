@@ -25,6 +25,8 @@ export default class MyPlugin extends Plugin {
         const dir = view.file?.parent?.path ?? "/";
         const new_file = (dir == "/" ? `${sel}.md` : `${dir}/${sel}.md`);
 
+        // create a new file using new_file path AI!
+
 
         console.log(`*** ${new_file} ***`)
       }
