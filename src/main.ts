@@ -26,8 +26,9 @@ export default class MyPlugin extends Plugin {
         const new_file = (dir == "/" ? `${sel}.md` : `${dir}/${sel}.md`);
 
         this.app.vault.create(new_file, "").then((file) => {
-
-          // Replace the selection in the original file with a link to the new file AI!
+          // Replace the selection in the original file with a link to the new file
+          const linkText = `[${sel}](${file.basename})`;
+          editor.replaceSelection(linkText);
 
           console.log(`Created new file: ${new_file}`);
         }).catch((error) => {
