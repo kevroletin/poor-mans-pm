@@ -23,6 +23,7 @@ export default class MyPlugin extends Plugin {
         if (view.file === null) {
           return;
         }
+        const view_file = view.file
 
         const head = lines[0];
         const body = lines.slice(1).join("\n");
@@ -31,18 +32,20 @@ export default class MyPlugin extends Plugin {
         const new_file = (dir == "/" ? `${head}.md` : `${dir}/${head}.md`);
 
         this.app.vault.read(view.file).then((content) => {
+          const parent_link = this.app.fileManager.generateMarkdownLink(view_file, new_file);
           // copy "project" property
           const xs = getFrontMatterInfo(content).frontmatter;
           const ys = xs.split("\n").filter((x) => x.startsWith("project:")).join("\n");
           const new_file_content = `---
 ${ys}
+parent: "${parent_link}"
 ---
 #todo
 ${body}
 `;
 
           this.app.vault.create(new_file, new_file_content).then((file) => {
-            const link = this.app.fileManager.generateMarkdownLink(file, view.file?.path ?? "");
+            const link = this.app.fileManager.generateMarkdownLink(file, view_file.path);
             editor.replaceSelection(link);
           }).catch((error) => {
             console.error("Error creating file:", error);
