@@ -28,22 +28,31 @@ export default class MyPlugin extends Plugin {
         const head = lines[0];
         const body = lines.slice(1).join("\n");
 
-        const dir = view.file.parent?.path ?? "/";
-        const new_file = (dir == "/" ? `${head}.md` : `${dir}/${head}.md`);
+        // const orig_dir = view.file.parent?.path ?? "/";
+
+        let x = view.file.path;
+
+        if (!x.endsWith(".md")) {
+          new Notice(`Not a markdown file`);
+          return;
+        }
+        const new_dir = x.substring(0, x.length - 3);
+        const new_file = (new_dir == "/" ? `${head}.md` : `${new_dir}/${head}.md`);
+
+        console.log(`Creating ${new_file}`);
 
         this.app.vault.read(view.file).then((content) => {
           const parent_link = this.app.fileManager.generateMarkdownLink(view_file, new_file);
           // copy "project" property
           const xs = getFrontMatterInfo(content).frontmatter;
-          const ys = xs.split("\n").filter((x) => x.startsWith("project:")).join("\n");
-          const new_file_content = `---
-${ys}
+          let new_fronmatter = xs.split("\n").filter((x) => x.startsWith("project:")).join("\n");
+          if (new_fronmatter !== "") { new_fronmatter = `\n${new_fronmatter}` }
+          const new_file_content = `---${new_fronmatter}
 parent: "${parent_link}"
 ---
 #todo
 ${body}
 `;
-
           this.app.vault.create(new_file, new_file_content).then((file) => {
             const link = this.app.fileManager.generateMarkdownLink(file, view_file.path);
             editor.replaceSelection(link);
