@@ -5,7 +5,7 @@ export default class MyPlugin extends Plugin {
   settings: MyPluginSettings;
 
   async onload() {
-    console.log("*** ONLOAD ***");
+    console.log("Loading plugin: poor-mans-pm");
 
     // await this.loadSettings();
 

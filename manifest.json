@@ -1,11 +1,11 @@
 {
-	"id": "my-create-subtask",
-	"name": "Create subtask",
+	"id": "poor-mans-pm",
+	"name": "Poor mans project management",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Create a task from selection",
-	"author": "Obsidian",
-	"authorUrl": "https://kevroletin.github.io",
-	"fundingUrl": "https://kevroletin.github.io",
+	"description": "Tiny snippets for project management",
+	"author": "kevroletin",
+	"authorUrl": "https://github.com/kevroletin/poor-mans-pm",
+	"fundingUrl": "https://github.com/kevroletin/poor-mans-pm",
 	"isDesktopOnly": false
 }
