@@ -39,8 +39,7 @@ export default class MyPlugin extends Plugin {
         const new_dir = x.substring(0, x.length - 3);
         const new_file = (new_dir == "/" ? `${head}.md` : `${new_dir}/${head}.md`);
 
-        console.log(`Creating ${new_file}`);
-
+        console.log(`Reading ${view.file.path}`);
         this.app.vault.read(view.file).then((content) => {
           const parent_link = this.app.fileManager.generateMarkdownLink(view_file, new_file);
           // copy "project" property
@@ -53,13 +52,27 @@ parent: "${parent_link}"
 #todo
 ${body}
 `;
-          this.app.vault.create(new_file, new_file_content).then((file) => {
-            const link = this.app.fileManager.generateMarkdownLink(file, view_file.path);
-            editor.replaceSelection(link);
-          }).catch((error) => {
-            console.error("Error creating file:", error);
-            new Notice(`Failed to create file: ${error.message}`);
+
+          var create_dir_p
+          if (this.app.vault.getAbstractFileByPath(new_dir) === null) {
+            create_dir_p = this.app.vault.createFolder(new_dir).catch((error) => {
+              console.error(`Error creating ${new_dir}:`, error);
+              new Notice(`Failed to create ${new_dir}: ${error.message}`);
+            })
+          } else {
+            create_dir_p = Promise.resolve(null)
+          }
+
+          create_dir_p.then(() => {
+            this.app.vault.create(new_file, new_file_content).then((file) => {
+              const link = this.app.fileManager.generateMarkdownLink(file, view_file.path);
+              editor.replaceSelection(link);
+            }).catch((error) => {
+              console.error(`Error creating ${new_file}:`, error);
+              new Notice(`Failed to create ${new_file}: ${error.message}`);
+            })
           });
+
         });
       }
     });
